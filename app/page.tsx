@@ -1,10 +1,10 @@
 'use client';
 import { useState, useEffect } from "react";
-import HabitTracker from 'src/components/HabitTracker';
-import MoodTracker from 'src/components/MoodTracker';
-import SummaryCard from 'src/components/SummaryCard';
-import StreaksCard from 'src/components/StreaksCard';
-import PaletteSelector from 'src/components/PaletteSelector';
+import HabitTracker from 'components/HabitTracker';
+import MoodTracker from 'components/MoodTracker';
+import SummaryCard from 'components/SummaryCard';
+import StreaksCard from 'components/StreaksCard';
+import PaletteSelector from 'components/PaletteSelector';
 
 export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState("");
