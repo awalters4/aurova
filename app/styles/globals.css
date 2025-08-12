@@ -27,3 +27,55 @@ body {
   font-family: var(--font-sans);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+/* Theme tokens */
+:root {
+  --color-background: #faf7f5;   /* soft blush */
+  --color-foreground: #111827;   /* ink */
+  --color-card: #ffffff;
+  --color-muted: #6b7280;
+  --color-accent: #0ea5e9;       /* links/buttons */
+  --ring: 0 0% 0%;
+}
+
+/* Base defaults */
+:root {
+  --color-background: #faf7f5;
+  --color-foreground: #111827;
+  --color-card: #ffffff;
+  --color-muted: #6b7280;
+  --color-accent: #0ea5e9;
+}
+
+/* Palettes you control */
+:root[data-theme="blush"] {
+  --color-background: #faf7f5;
+  --color-card: #ffffff;
+  --color-accent: #e879f9; /* tweak later */
+}
+
+:root[data-theme="earthy"] {
+  --color-background: #f7f3ed;
+  --color-card: #ffffff;
+  --color-accent: #16a34a;
+}
+
+/* If you ever want a true dark later, you opt-in: */
+:root[data-theme="dark"] {
+  --color-background: #0b0b0c;
+  --color-foreground: #fafafa;
+  --color-card: #131316;
+  --color-muted: #9ca3af;
+}
+
+/* Tiny design system */
+@layer components {
+  .card { @apply bg-[var(--color-card)] rounded-2xl shadow-sm border border-black/5; }
+  .section { @apply card p-5 md:p-6; }
+  .h-title { @apply text-lg md:text-xl font-semibold tracking-tight; }
+  .muted { @apply text-sm text-[var(--color-muted)]; }
+  .btn { @apply inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition; }
+  .btn-primary { @apply btn bg-black text-white hover:bg-black/90; }
+  .btn-ghost { @apply btn border hover:bg-black/5; }
+  .input { @apply w-full border rounded-lg px-3 py-2; }
+}
