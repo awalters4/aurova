@@ -10,7 +10,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: { 
-        sans: ["var(--font-sans)"] 
+        sans: ['var(--font-geist-sans)', 'ui-sans-serif', 'system-ui'] 
       },
       colors: {
         blush: {

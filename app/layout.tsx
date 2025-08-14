@@ -1,4 +1,4 @@
-import "app/styles/globals.css";
+import "./styles/globals.css";
 import { Inter } from "next/font/google";
 import Navbar from "components/Navbar";
 import { Toaster } from "react-hot-toast";
@@ -14,7 +14,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="font-sans bg-[var(--color-background)] text-[var(--color-foreground)]">
+      <body className="font-sans">
         <Navbar />
         {children}
         <Toaster />
