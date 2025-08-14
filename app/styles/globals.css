@@ -2,80 +2,112 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ================================
+   THEME TOKENS (one source of truth)
+   ================================ */
+
+/* Default theme (Blush) */
 :root {
-  --color-bg: #ffffff;
-  --color-text: #171717;
-  --font-sans: var(--font-geist-sans, Arial, sans-serif);
-  --font-mono: var(--font-geist-mono, monospace);
+  /* surfaces */
+  --bg:    #fff7f9;   /* soft rose */
+  --card:  #ffffff;
+
+  /* text */
+  --fg:      #4a1730; /* deep rose ink */
+  --muted:   #7a3a56;
+
+  /* accents */
+  --accent:  #ff5a8b; /* hot pink */
+  --ring:    rgba(74, 23, 48, .14);
 }
 
-/* Theme: Blush */
-.theme-blush {
-  --color-bg: #fcefee;
-  --color-text: #5a2e2e;
-}
-
-/* Theme: Earthy */
-.theme-earthy {
-  --color-bg: #f4f1ea;
-  --color-text: #3f3422;
-}
-
-body {
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font-sans);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Theme tokens */
-:root {
-  --color-background: #faf7f5;   /* soft blush */
-  --color-foreground: #111827;   /* ink */
-  --color-card: #ffffff;
-  --color-muted: #6b7280;
-  --color-accent: #0ea5e9;       /* links/buttons */
-  --ring: 0 0% 0%;
-}
-
-/* Base defaults */
-:root {
-  --color-background: #faf7f5;
-  --color-foreground: #111827;
-  --color-card: #ffffff;
-  --color-muted: #6b7280;
-  --color-accent: #0ea5e9;
-}
-
-/* Palettes you control */
-:root[data-theme="blush"] {
-  --color-background: #faf7f5;
-  --color-card: #ffffff;
-  --color-accent: #e879f9; /* tweak later */
-}
-
+/* Earthy (distinct) */
 :root[data-theme="earthy"] {
-  --color-background: #f7f3ed;
-  --color-card: #ffffff;
-  --color-accent: #16a34a;
+  --bg:    #fbfaf6;   /* warm sand */
+  --card:  #ffffff;
+  --fg:    #173a2b;   /* evergreen ink */
+  --muted: #446154;
+  --accent:#21a066;   /* fern */
+  --ring:  rgba(23, 58, 43, .14);
 }
 
-/* If you ever want a true dark later, you opt-in: */
-:root[data-theme="dark"] {
-  --color-background: #0b0b0c;
-  --color-foreground: #fafafa;
-  --color-card: #131316;
-  --color-muted: #9ca3af;
+/* (Optional) Noir — add to selector later if you want
+:root[data-theme="noir"] {
+  --bg:#0b0c0e; --card:#111318; --fg:#f4f6f8; --muted:#9aa3ad; --accent:#8ab4ff; --ring:rgba(138,180,255,.2);
+}
+*/
+
+/* ================================
+   GLOBAL BINDINGS
+   ================================ */
+
+html, body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-geist-sans, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji");
+  transition: background-color .25s ease, color .25s ease;
+  color-scheme: light;
 }
 
-/* Tiny design system */
+::selection { background: color-mix(in srgb, var(--accent) 28%, transparent); }
+
+/* Links / interactive accents inherit palette */
+a, .link { color: var(--accent); }
+
+/* ================================
+   COMPONENT PRIMITIVES
+   ================================ */
+
 @layer components {
-  .card { @apply bg-[var(--color-card)] rounded-2xl shadow-sm border border-black/5; }
-  .section { @apply card p-5 md:p-6; }
-  .h-title { @apply text-lg md:text-xl font-semibold tracking-tight; }
-  .muted { @apply text-sm text-[var(--color-muted)]; }
-  .btn { @apply inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition; }
-  .btn-primary { @apply btn bg-black text-white hover:bg-black/90; }
-  .btn-ghost { @apply btn border hover:bg-black/5; }
-  .input { @apply w-full border rounded-lg px-3 py-2; }
+  .container-page { @apply max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8; }
+
+  .section       { @apply rounded-2xl shadow-sm p-4 md:p-6 border; }
+  .section { background: var(--card); border-color: color-mix(in srgb, var(--fg) 8%, transparent); }
+
+  .h-title       { @apply text-lg md:text-xl font-semibold tracking-tight; }
+  .muted         { color: var(--muted); @apply text-sm; }
+
+  .btn           { @apply inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition select-none;
+                   border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent); }
+  .btn-ghost     { @apply btn; background: transparent; }
+  .btn-ghost:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
+
+  .btn-primary   { @apply btn text-white; background: var(--accent); border-color: transparent; }
+  .btn-primary:hover { filter: brightness(.95); }
+
+  .chip          { @apply inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm;
+                   border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent); background: var(--card); }
+
+  .input         { @apply w-full rounded-lg px-3 py-2 bg-white;
+                   border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+                   transition: box-shadow .15s ease, border-color .15s ease; }
+  .input:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent); border-color: var(--accent); }
+
+  /* Checkbox used in Command Center */
+  .chk { @apply inline-flex items-center justify-center w-5 h-5 rounded-md transition;
+         background: #fff; border: 1.5px solid color-mix(in srgb, var(--fg) 26%, transparent); }
+  .chk:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
+  .chk:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent); }
+  .chk-on { background: var(--fg); color: white; border-color: var(--fg); }
+  .chk svg { width: 12px; height: 12px; }
+
+  /* Navbar pills look consistent across themes */
+  .nav-pill { @apply rounded-xl px-3 py-2 text-sm;
+              border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent); background: var(--card); }
 }
+
+/* ================================
+   UTILITY FIXES
+   ================================ */
+
+/* Emoji picker */
+.emoji-picker {
+  position: absolute;
+  z-index: 1000;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.15);
+}
+
+/* Keep cards readable on tinted backgrounds */
+.card, .section { background: var(--card); }

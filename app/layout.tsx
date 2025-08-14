@@ -8,6 +8,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 export const metadata = {
   title: "Aurova",
   description: "Personalized habit + mood tracker.",
+  icons: { icon: '/icon.svg' }, 
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -17,6 +18,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Navbar />
         {children}
         <Toaster />
+
+        <footer className="text-center text-xs text-[var(--color-muted)] py-6">
+  Aurova • © {new Date().getFullYear()}
+</footer>
+
       </body>
     </html>
   );

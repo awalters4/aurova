@@ -16,12 +16,10 @@ export default function DashboardPage() {
 
   return (
     <main className="min-h-screen bg-[var(--color-background)] text-[var(--color-foreground)] p-6">
+        <div className="max-w-4xl mx-auto px-4 py-6">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="col-span-1 lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <PaletteSelector />
-            <div className="text-sm opacity-70">Overview</div>
-          </div>
+          
 
           {/* Month grid */}
           <ChecklistGrid />
@@ -31,6 +29,11 @@ export default function DashboardPage() {
         <div className="col-span-1 space-y-4">
           {/* You can show read-only reminders or recent milestones here later */}
         </div>
+      </div>
+      <footer className="text-center text-xs text-[var(--color-muted)] py-6">
+  Aurova • © {new Date().getFullYear()}
+</footer>
+
       </div>
     </main>
   );

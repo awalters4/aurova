@@ -1,58 +1,58 @@
 'use client';
-import { useState, useEffect } from 'react';
-import PaletteSelector from 'components/PaletteSelector';
+import { useEffect, useRef, useState } from 'react';
 import TodayChecklist from 'components/TodayChecklist';
-import ReminderSettings from 'components/ReminderSettings';
+import { localYYYYMMDD, formatHeader } from 'lib/dates';
+
+
+function prettyHeader(ds: string) {
+  const d = new Date(ds);
+  const n = d.getDate();
+  const suffix = (n%10===1&&n%100!==11)?'st':(n%10===2&&n%100!==12)?'nd':(n%10===3&&n%100!==13)?'rd':'th';
+  return `${d.toLocaleDateString(undefined, { month:'long', day:'numeric' })}${suffix}’s habits`;
+}
 
 export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState('');
-  const [showModal, setShowModal] = useState(false);
+  const [showClear, setShowClear] = useState(false);
+  const dateRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    setSelectedDate(new Date().toISOString().split('T')[0]);
-  }, []);
-
-  const goToToday = () => setSelectedDate(new Date().toISOString().split('T')[0]);
-
+  useEffect(() => setSelectedDate(localYYYYMMDD()), []);
   if (!selectedDate) return null;
 
   return (
-    <main className="min-h-screen bg-[var(--color-background)] text-[var(--color-foreground)] p-6">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* LEFT: controls + checklists */}
+    <main className="container-page">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* LEFT: Command Center */}
         <div className="col-span-1 lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
-            <PaletteSelector />
+
+<h1 className="h-title">{formatHeader(selectedDate)}</h1>
             <div className="flex items-center gap-2">
               <input
+                ref={dateRef}
                 type="date"
+                className="sr-only"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="border rounded px-3 py-1 text-sm shadow"
-                max={new Date().toISOString().split('T')[0]}
+                max={localYYYYMMDD()}
               />
-              <button onClick={goToToday} className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm">
-                Today
+              <button className="btn-ghost" onClick={()=>dateRef.current?.showPicker?.()} title="Pick date">📅</button>
+              <button className="btn-ghost text-[var(--color-accent)]" onClick={()=>setShowClear(true)}>
+                Clear this day
               </button>
             </div>
           </div>
 
-          <button className="text-sm text-blue-600 hover:underline text-left" onClick={() => setShowModal(true)}>
-            Clear data for this date
-          </button>
-
-          <TodayChecklist selectedDate={selectedDate} />
+          <div className="section">
+            <TodayChecklist selectedDate={selectedDate} />
+          </div>
         </div>
 
-        {/* RIGHT: reminders (and mood when you’re ready) */}
-        <div className="col-span-1 space-y-4">
-          <ReminderSettings />
-          {/* <MoodTracker selectedDate={selectedDate} />  <-- migrate to Supabase next */}
-        </div>
+      
       </div>
 
-      {showModal && (
-        <TodayChecklist.ConfirmClear selectedDate={selectedDate} onClose={() => setShowModal(false)} />
+      {showClear && (
+        <TodayChecklist.ConfirmClear selectedDate={selectedDate} onClose={()=>setShowClear(false)} />
       )}
     </main>
   );
