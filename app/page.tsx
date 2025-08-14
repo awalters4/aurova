@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import TodayChecklist from 'components/TodayChecklist';
+import TodayChecklist, { ConfirmClear } from 'components/TodayChecklist';
 import { localYYYYMMDD, formatHeader } from 'lib/dates';
 
 
@@ -52,8 +52,11 @@ export default function HomePage() {
       </div>
 
       {showClear && (
-        <TodayChecklist.ConfirmClear selectedDate={selectedDate} onClose={()=>setShowClear(false)} />
-      )}
+  <ConfirmClear
+    selectedDate={selectedDate}
+    onClose={() => setShowClear(false)}
+  />
+)}
     </main>
   );
 }

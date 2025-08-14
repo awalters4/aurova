@@ -165,6 +165,56 @@ function EmojiPicker({ value, onChange }: { value: string; onChange: (v: string)
   );
 }
 
+// Modal to confirm clearing a day's data
+export function ConfirmClear({
+  selectedDate,
+  onClose,
+}: {
+  selectedDate: string;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/30">
+      <div className="section w-[320px] text-center">
+        <h3 className="h-title mb-2">Clear this day?</h3>
+        <p className="muted mb-4">
+          This will remove all check-ins for <strong>{selectedDate}</strong>.
+        </p>
+        <div className="flex justify-center gap-2">
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => {
+              try {
+                const raw = localStorage.getItem('lifestack_data');
+                if (raw) {
+                  const data = JSON.parse(raw);
+                  delete data[selectedDate];
+                  localStorage.setItem('lifestack_data', JSON.stringify(data));
+                }
+              } catch (e) {
+                console.error('Failed to clear day', e);
+              } finally {
+                onClose();
+              }
+            }}
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 function InlineEdit({ initial, onSave, className }:{ initial:string; onSave:(v:string)=>void; className?:string }) {
   const [val, setVal] = useState(initial);
   const [editing, setEditing] = useState(false);
