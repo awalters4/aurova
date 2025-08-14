@@ -6,5 +6,4 @@ export default {
   images: { unoptimized: true },
   trailingSlash: true,
   basePath: isProd ? '/aurova' : '',
-  assetPrefix: isProd ? '/aurova/' : undefined,
 }
