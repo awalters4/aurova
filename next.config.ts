@@ -1,8 +1,8 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  output: "export", // if you're using `next export`
-  basePath: "/aurova",
-  assetPrefix: "/aurova/",
+import type { NextConfig } from 'next';
+const nextConfig: NextConfig = {
+  output: 'export',
+  images: { unoptimized: true },
+  trailingSlash: true,
+  // no basePath, no assetPrefix
 };
-
-module.exports = nextConfig;
+export default nextConfig;
