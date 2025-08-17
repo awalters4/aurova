@@ -12,11 +12,15 @@ export default function LoginPage() {
       process.env.NEXT_PUBLIC_APP_URL ||
       (typeof window !== 'undefined' ? window.location.origin : '');
     if (!email) return alert('Enter your email');
+    console.log('redirect to:', `${base}/auth/callback`);
+
 
     const { error } = await supabase.auth.signInWithOtp({
+      
       email,
-      options: { emailRedirectTo: `${base}/dashboard` },
+      options: { emailRedirectTo: `${base}/auth/callback` },
     });
+
     if (error) alert(error.message);
     else setSent(true);
   }
