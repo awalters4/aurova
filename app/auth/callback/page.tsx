@@ -8,25 +8,30 @@ export default function AuthCallback() {
   const sp = useSearchParams();
 
   useEffect(() => {
-    // This will parse the #access_token fragment and set the session client-side.
-    // It also covers "code" style redirects (OAuth) if you add those later.
     (async () => {
-      // Force Supabase to hydrate session from the URL/hash
+      // If OAuth / PKCE “code” is present, exchange it for a session.
+      const code = sp.get('code');
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          console.error('exchangeCodeForSession error:', error.message);
+          router.replace('/login');
+          return;
+        }
+        router.replace('/dashboard');
+        return;
+      }
+
+      // Otherwise, magic-link flow with `#access_token` fragment:
+      // supabase-js will parse hash and set cookies on first getSession()
       await supabase.auth.getSession();
-
-      // Optional: if you want to guard accidental direct visits, check param "type"
-      const type = sp.get('type'); // e.g., 'magiclink', 'recovery', etc.
-
-      // After session is set, go to your app
-      router.replace('/dashboard'); // or '/' if you prefer
+      router.replace('/dashboard');
     })();
   }, [router, sp]);
 
   return (
     <div className="container-page">
-      <div className="section">
-        <p>Signing you in…</p>
-      </div>
+      <div className="section">Signing you in…</div>
     </div>
   );
 }
