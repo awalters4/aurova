@@ -1,10 +1,11 @@
 'use client';
+
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { supabase } from 'lib/supabaseClient';
+import { usePathname } from 'next/navigation';
 import Logo from 'components/Logo';
 
+/* ---------- Theme Button (unchanged) ---------- */
 function ThemeButton() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -41,53 +42,27 @@ function ThemeButton() {
   );
 }
 
-function UserBadge({ email }: { email: string | null }) {
+/* ---------- User Badge (kept, but no email while auth is disabled) ---------- */
+function UserBadge() {
   return (
-    <div className="relative group">
-      <button type="button" className="btn-ghost" title={email ?? ''}>
+    <div className="relative">
+      <button type="button" className="btn-ghost" title="">
         👤
       </button>
-      {email && (
-        <div className="absolute right-0 mt-2 hidden group-hover:block bg-white border rounded-md shadow px-2 py-1 text-xs">
-          {email}
-        </div>
-      )}
     </div>
   );
 }
 
+/* ---------- NAVBAR (auth-free) ---------- */
 export default function Navbar() {
-  const [email, setEmail] = useState<string | null>(null);
-  const [signedIn, setSignedIn] = useState<boolean>(false);
   const pathname = usePathname();
-  const router = useRouter();
 
-  useEffect(() => {
-    // Initialize from current session
-    supabase.auth.getSession().then(({ data }) => {
-      setSignedIn(!!data.session);
-      setEmail(data.session?.user?.email ?? null);
-    });
-
-    // Keep in sync
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSignedIn(!!session);
-      setEmail(session?.user?.email ?? null);
-    });
-    return () => sub.subscription.unsubscribe();
-  }, []);
-
-  // Build nav links; hide the current page and /login when you're on it
+  // Public links only; hide the current page link
   const allLinks = [
     { href: '/', label: 'Command Center' },
     { href: '/dashboard', label: 'Dashboard' },
   ];
   const links = allLinks.filter((l) => l.href !== pathname);
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.replace('/login');
-  };
 
   return (
     <header className="bg-white border-b">
@@ -101,15 +76,9 @@ export default function Navbar() {
             </Link>
           ))}
 
-          {signedIn ? (
-            <button type="button" className="btn-ghost" onClick={handleSignOut}>
-              Sign out
-            </button>
-          ) : pathname !== '/login' ? (
-            <Link href="/login" className="btn-ghost">
-              Sign in
-            </Link>
-          ) : null}
+          {/* Auth controls temporarily disabled */}
+          {/* <Link href="/login" className="btn-ghost">Sign in</Link> */}
+          {/* <button type="button" className="btn-ghost" onClick={handleSignOut}>Sign out</button> */}
         </div>
 
         {/* Center title */}
@@ -119,7 +88,7 @@ export default function Navbar() {
 
         {/* Right cluster */}
         <div className="flex items-center justify-end gap-2">
-          <UserBadge email={email} />
+          <UserBadge />
         </div>
       </div>
     </header>
