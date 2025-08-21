@@ -4,9 +4,35 @@ import { createPortal } from 'react-dom';
 import { supabase } from 'lib/supabaseClient';
 
 
+/* --------------------- GUEST-MODE HELPERS --------------------- */
+const G_HABITS_KEY = 'aurova.guest.habits.v1';
+const G_ENTRY_KEY = (day: string) => `aurova.guest.entries.${day}.v1`;
+
+function lsLoad<T>(key: string, fallback: T): T {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+function lsSave<T>(key: string, value: T) {
+  try {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+}
+function uuid() {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
+  return Math.random().toString(36).slice(2);
+}
+
+/* --------------------------- TYPES ---------------------------- */
 type Habit = { id: string; name: string; emoji: string };
 type Entry = { habit_id: string; date: string };
 
+/* ======================= COMPONENT ============================ */
 export default function TodayChecklist({ selectedDate }: { selectedDate: string }) {
   const day = useMemo(() => selectedDate, [selectedDate]);
   const [habits, setHabits] = useState<Habit[]>([]);
@@ -21,7 +47,17 @@ export default function TodayChecklist({ selectedDate }: { selectedDate: string 
 
   async function reload() {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+
+    // --- Guest mode ---
+    if (!user) {
+      const hs = lsLoad<Habit[]>(G_HABITS_KEY, []);
+      setHabits(hs);
+      const em = lsLoad<Record<string, boolean>>(G_ENTRY_KEY(day), {});
+      setDoneMap(em);
+      return;
+    }
+
+    // --- Signed-in path ---
     const [h, e] = await Promise.all([
       supabase.from('habits').select('id,name,emoji').order('created_at', { ascending: true }),
       supabase.from('habit_entries').select('habit_id').eq('date', day)
@@ -36,18 +72,36 @@ export default function TodayChecklist({ selectedDate }: { selectedDate: string 
     try {
       setBusy(habit_id);
       const on = !!doneMap[habit_id];
+
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // --- Guest mode ---
+      if (!user) {
+        const key = G_ENTRY_KEY(day);
+        const em = lsLoad<Record<string, boolean>>(key, {});
+        if (on) {
+          delete em[habit_id];
+        } else {
+          em[habit_id] = true;
+        }
+        lsSave(key, em);
+        setDoneMap(em);
+        return;
+      }
+
+      // --- Signed-in path ---
       if (on) {
         const { error } = await supabase.from('habit_entries')
           .delete().eq('habit_id', habit_id).eq('date', day);
         if (error) throw error;
       } else {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Not signed in');
+        const { data: { user: u } } = await supabase.auth.getUser();
+        if (!u) throw new Error('Not signed in');
         const { error } = await supabase.from('habit_entries')
-          .insert({ habit_id, user_id: user.id, date: day, completed: true });
+          .insert({ habit_id, user_id: u.id, date: day, completed: true });
         if (error) throw error;
       }
-      // optimistic update so you see it instantly
+      // optimistic update
       setDoneMap(m => ({ ...m, [habit_id]: !m[habit_id] }));
     } catch (err: any) {
       alert(err?.message || 'Could not update');
@@ -59,8 +113,21 @@ export default function TodayChecklist({ selectedDate }: { selectedDate: string 
 
   async function addHabit() {
     if (!newName.trim()) return;
+
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return alert('Sign in first');
+
+    // --- Guest mode ---
+    if (!user) {
+      const hs = lsLoad<Habit[]>(G_HABITS_KEY, []);
+      const newHabit: Habit = { id: uuid(), name: newName.trim(), emoji: newEmoji };
+      const next = [...hs, newHabit];
+      lsSave(G_HABITS_KEY, next);
+      setHabits(next);
+      setNewName(''); setNewEmoji('✅'); setAdding(false);
+      return;
+    }
+
+    // --- Signed-in path ---
     const { data, error } = await supabase.from('habits')
       .insert({ user_id: user.id, name: newName.trim(), emoji: newEmoji })
       .select('id,name,emoji').single();
@@ -70,6 +137,24 @@ export default function TodayChecklist({ selectedDate }: { selectedDate: string 
   }
 
   async function deleteHabit(id: string) {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // --- Guest mode ---
+    if (!user) {
+      const hs = lsLoad<Habit[]>(G_HABITS_KEY, []);
+      const next = hs.filter(h => h.id !== id);
+      lsSave(G_HABITS_KEY, next);
+      setHabits(next);
+
+      // also remove from today's entries
+      const key = G_ENTRY_KEY(day);
+      const em = lsLoad<Record<string, boolean>>(key, {});
+      if (id in em) { delete em[id]; lsSave(key, em); }
+      setDoneMap(m => { const { [id]: _, ...rest } = m; return rest; });
+      return;
+    }
+
+    // --- Signed-in path ---
     const { error } = await supabase.from('habits').delete().eq('id', id);
     if (error) return alert(error.message);
     setHabits(arr => arr.filter(h => h.id !== id));
@@ -87,54 +172,71 @@ export default function TodayChecklist({ selectedDate }: { selectedDate: string 
       </div>
 
       <ul className="divide-y">
-  {habits.map(h => {
-    const on = !!doneMap[h.id];
-    return (
-      <li key={h.id} className="flex items-center gap-3 py-3">
-        {/* VISIBLE CHECKBOX SQUARE */}
-        <button
-  type="button"
-  onClick={() => toggle(h.id)}
-  className={`chk ${on ? 'chk-on' : ''}`}
-  aria-label={on ? 'Uncheck habit' : 'Check habit'}
-  aria-pressed={on}
->
-  {on && (
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 8l3 3 7-7" />
-    </svg>
-  )}
-</button>
+        {habits.map(h => {
+          const on = !!doneMap[h.id];
+          return (
+            <li key={h.id} className="flex items-center gap-3 py-3">
+              {/* visible checkbox square */}
+              <button
+                type="button"
+                onClick={() => toggle(h.id)}
+                className={`chk ${on ? 'chk-on' : ''}`}
+                aria-label={on ? 'Uncheck habit' : 'Check habit'}
+                aria-pressed={on}
+                disabled={busy === h.id}
+              >
+                {on && (
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 8l3 3 7-7" />
+                  </svg>
+                )}
+              </button>
 
+              <EmojiPicker
+                value={h.emoji}
+                onChange={async emo => {
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (!user) {
+                    // guest: update local
+                    const list = lsLoad<Habit[]>(G_HABITS_KEY, []);
+                    const next = list.map(x => x.id === h.id ? { ...x, emoji: emo } : x);
+                    lsSave(G_HABITS_KEY, next);
+                    setHabits(next);
+                    return;
+                  }
+                  // signed-in
+                  const { error } = await supabase.from('habits').update({ emoji: emo }).eq('id', h.id);
+                  if (!error) setHabits(list => list.map(x => x.id === h.id ? { ...x, emoji: emo } : x));
+                }}
+              />
 
-        <EmojiPicker
-          value={h.emoji}
-          onChange={async emo => {
-            const { error } = await supabase.from('habits').update({ emoji: emo }).eq('id', h.id);
-            if (!error) setHabits(list => list.map(x => x.id === h.id ? { ...x, emoji: emo } : x));
-          }}
-        />
+              <InlineEdit
+                initial={h.name}
+                onSave={async val => {
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (!user) {
+                    const list = lsLoad<Habit[]>(G_HABITS_KEY, []);
+                    const next = list.map(x => x.id === h.id ? { ...x, name: val } : x);
+                    lsSave(G_HABITS_KEY, next);
+                    setHabits(next);
+                    return;
+                  }
+                  const { error } = await supabase.from('habits').update({ name: val }).eq('id', h.id);
+                  if (!error) setHabits(list => list.map(x => x.id === h.id ? { ...x, name: val } : x));
+                }}
+                className="flex-1"
+              />
 
-        <InlineEdit
-          initial={h.name}
-          onSave={val => supabase.from('habits').update({ name: val }).eq('id', h.id)
-            .then(({ error }) => {
-              if (!error) setHabits(list => list.map(x => x.id === h.id ? { ...x, name: val } : x));
-            })}
-          className="flex-1"
-        />
-
-        {deleteMode && (
-          <button type="button" className="btn-ghost text-xs" onClick={() => deleteHabit(h.id)}>
-            Delete
-          </button>
-        )}
-      </li>
-    );
-  })}
-  {habits.length === 0 && <li className="py-6 muted">No habits yet — click ➕ to add.</li>}
-</ul>
-
+              {deleteMode && (
+                <button type="button" className="btn-ghost text-xs" onClick={() => deleteHabit(h.id)}>
+                  Delete
+                </button>
+              )}
+            </li>
+          );
+        })}
+        {habits.length === 0 && <li className="py-6 muted">No habits yet — click ➕ to add.</li>}
+      </ul>
 
       {adding && (
         <div className="mt-4 flex gap-2">
@@ -146,7 +248,8 @@ export default function TodayChecklist({ selectedDate }: { selectedDate: string 
     </div>
   );
 }
-/* dependency-free emoji picker rendered in a portal (won’t clip) */
+
+/* ----------------- EMOJI PICKER (PORTAL, NO CLIP) ----------------- */
 function EmojiPicker({ value, onChange }: { value: string; onChange: (v: string)=>void }) {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement | null>(null);
@@ -227,8 +330,7 @@ function EmojiPicker({ value, onChange }: { value: string; onChange: (v: string)
   );
 }
 
-
-/* helpers */
+/* --------------------------- HELPERS --------------------------- */
 
 // Modal to confirm clearing a day's data
 export function ConfirmClear({
@@ -258,6 +360,10 @@ export function ConfirmClear({
             className="btn-primary"
             onClick={() => {
               try {
+                // Clear guest entries for that day
+                localStorage.removeItem(G_ENTRY_KEY(selectedDate));
+
+                // (Legacy key cleanup, if it existed)
                 const raw = localStorage.getItem('lifestack_data');
                 if (raw) {
                   const data = JSON.parse(raw);
@@ -278,7 +384,6 @@ export function ConfirmClear({
     </div>
   );
 }
-
 
 function InlineEdit({ initial, onSave, className }:{ initial:string; onSave:(v:string)=>void; className?:string }) {
   const [val, setVal] = useState(initial);
