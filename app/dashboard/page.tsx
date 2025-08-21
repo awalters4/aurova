@@ -10,7 +10,6 @@ export default function DashboardPage() {
   const router = useRouter();
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) router.replace('/login');
     });
   }, [router]);
 
