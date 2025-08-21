@@ -1,153 +1,399 @@
-// app/dashboard/page.tsx
-import { cookies } from "next/headers";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+'use client';
+import { useEffect, useMemo, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { supabase } from 'lib/supabaseClient';
 
-// Shared types
-type Habit = { id: string; name: string; emoji: string };
 
-export default async function Dashboard() {
-  const supabase = createServerComponentClient({ cookies });
-  const { data: { session } } = await supabase.auth.getSession();
-
-  // If signed in: fetch today's data on the server
-  if (session) {
-    const today = new Date();                    // server time is fine for now
-    const day = today.toISOString().slice(0, 10); // 'YYYY-MM-DD'
-
-    const [h, e] = await Promise.all([
-      supabase.from("habits").select("id,name,emoji").order("created_at", { ascending: true }),
-      supabase.from("habit_entries").select("habit_id").eq("date", day),
-    ]);
-
-    const habits: Habit[] = !h.error && h.data ? (h.data as any) : [];
-    const doneSet = new Set<string>((!e.error && e.data ? e.data : []).map((x: any) => x.habit_id));
-    const done = habits.filter(hb => doneSet.has(hb.id));
-
-    return (
-      <main className="p-6">
-        <h1 className="text-2xl font-semibold mb-4">Dashboard</h1>
-        <p className="text-sm opacity-70 mb-4">Signed in as {session.user.email}</p>
-
-        <section className="grid gap-4 md:grid-cols-2">
-          <Card title="Today’s Completed">
-            {done.length ? (
-              <ul className="space-y-2">
-                {done.map(hb => (
-                  <li key={hb.id} className="flex items-center gap-2">
-                    <span className="text-lg">{hb.emoji}</span>
-                    <span>{hb.name}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="muted">No habits checked yet today.</p>
-            )}
-          </Card>
-
-          <Card title="All Habits">
-            {habits.length ? (
-              <ul className="space-y-2">
-                {habits.map(hb => (
-                  <li key={hb.id} className="flex items-center gap-2">
-                    <span className="text-lg">{hb.emoji}</span>
-                    <span>{hb.name}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="muted">No habits yet.</p>
-            )}
-          </Card>
-        </section>
-      </main>
-    );
-  }
-
-  // If NOT signed in: render a client component that reads localStorage
-  return <GuestDashboard />;
-}
-
-// Simple card UI
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-2xl bg-white shadow p-4">
-      <h2 className="text-lg font-semibold mb-2">{title}</h2>
-      {children}
-    </div>
-  );
-}
-
-/* ----------------------- Guest dashboard ----------------------- */
-"use client";
-import { useEffect, useState } from "react";
-
-const G_HABITS_KEY = "aurova.guest.habits.v1";
+/* --------------------- GUEST-MODE HELPERS --------------------- */
+const G_HABITS_KEY = 'aurova.guest.habits.v1';
 const G_ENTRY_KEY = (day: string) => `aurova.guest.entries.${day}.v1`;
 
 function lsLoad<T>(key: string, fallback: T): T {
   try {
+    if (typeof window === 'undefined') return fallback;
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : fallback;
   } catch {
     return fallback;
   }
 }
+function lsSave<T>(key: string, value: T) {
+  try {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+}
+function uuid() {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
+  return Math.random().toString(36).slice(2);
+}
 
-function GuestDashboard() {
+/* --------------------------- TYPES ---------------------------- */
+type Habit = { id: string; name: string; emoji: string };
+type Entry = { habit_id: string; date: string };
+
+/* ======================= COMPONENT ============================ */
+export default function TodayChecklist({ selectedDate }: { selectedDate: string }) {
+  const day = useMemo(() => selectedDate, [selectedDate]);
   const [habits, setHabits] = useState<Habit[]>([]);
-  const [doneIds, setDoneIds] = useState<Set<string>>(new Set());
+  const [doneMap, setDoneMap] = useState<Record<string, boolean>>({});
+  const [adding, setAdding] = useState(false);
+  const [deleteMode, setDeleteMode] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newEmoji, setNewEmoji] = useState('✅');
+  const [busy, setBusy] = useState<string | null>(null);
 
-  useEffect(() => {
-    const today = new Date();
-    // Get YYYY-MM-DD in local timezone so it matches your checklist key
-    const day = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
-      .toISOString()
-      .slice(0, 10);
+  useEffect(() => { void reload(); }, [day]);
 
-    const hs = lsLoad<Habit[]>(G_HABITS_KEY, []);
-    const em = lsLoad<Record<string, boolean>>(G_ENTRY_KEY(day), {});
-    setHabits(hs);
-    setDoneIds(new Set(Object.keys(em)));
-  }, []);
+  async function reload() {
+    const { data: { user } } = await supabase.auth.getUser();
 
-  const done = habits.filter(h => doneIds.has(h.id));
+    // --- Guest mode ---
+    if (!user) {
+      const hs = lsLoad<Habit[]>(G_HABITS_KEY, []);
+      setHabits(hs);
+      const em = lsLoad<Record<string, boolean>>(G_ENTRY_KEY(day), {});
+      setDoneMap(em);
+      return;
+    }
+
+    // --- Signed-in path ---
+    const [h, e] = await Promise.all([
+      supabase.from('habits').select('id,name,emoji').order('created_at', { ascending: true }),
+      supabase.from('habit_entries').select('habit_id').eq('date', day)
+    ]);
+    if (!h.error && h.data) setHabits(h.data as Habit[]);
+    const map: Record<string, boolean> = {};
+    if (!e.error && e.data) (e.data as Entry[]).forEach(x => (map[x.habit_id] = true));
+    setDoneMap(map);
+  }
+
+  async function toggle(habit_id: string) {
+    try {
+      setBusy(habit_id);
+      const on = !!doneMap[habit_id];
+
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // --- Guest mode ---
+      if (!user) {
+        const key = G_ENTRY_KEY(day);
+        const em = lsLoad<Record<string, boolean>>(key, {});
+        if (on) {
+          delete em[habit_id];
+        } else {
+          em[habit_id] = true;
+        }
+        lsSave(key, em);
+        setDoneMap(em);
+        return;
+      }
+
+      // --- Signed-in path ---
+      if (on) {
+        const { error } = await supabase.from('habit_entries')
+          .delete().eq('habit_id', habit_id).eq('date', day);
+        if (error) throw error;
+      } else {
+        const { data: { user: u } } = await supabase.auth.getUser();
+        if (!u) throw new Error('Not signed in');
+        const { error } = await supabase.from('habit_entries')
+          .insert({ habit_id, user_id: u.id, date: day, completed: true });
+        if (error) throw error;
+      }
+      // optimistic update
+      setDoneMap(m => ({ ...m, [habit_id]: !m[habit_id] }));
+    } catch (err: any) {
+      alert(err?.message || 'Could not update');
+      console.error(err);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function addHabit() {
+    if (!newName.trim()) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // --- Guest mode ---
+    if (!user) {
+      const hs = lsLoad<Habit[]>(G_HABITS_KEY, []);
+      const newHabit: Habit = { id: uuid(), name: newName.trim(), emoji: newEmoji };
+      const next = [...hs, newHabit];
+      lsSave(G_HABITS_KEY, next);
+      setHabits(next);
+      setNewName(''); setNewEmoji('✅'); setAdding(false);
+      return;
+    }
+
+    // --- Signed-in path ---
+    const { data, error } = await supabase.from('habits')
+      .insert({ user_id: user.id, name: newName.trim(), emoji: newEmoji })
+      .select('id,name,emoji').single();
+    if (error) return alert(error.message);
+    setHabits(h => [...h, data as Habit]);
+    setNewName(''); setNewEmoji('✅'); setAdding(false);
+  }
+
+  async function deleteHabit(id: string) {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // --- Guest mode ---
+    if (!user) {
+      const hs = lsLoad<Habit[]>(G_HABITS_KEY, []);
+      const next = hs.filter(h => h.id !== id);
+      lsSave(G_HABITS_KEY, next);
+      setHabits(next);
+
+      // also remove from today's entries
+      const key = G_ENTRY_KEY(day);
+      const em = lsLoad<Record<string, boolean>>(key, {});
+      if (id in em) { delete em[id]; lsSave(key, em); }
+      setDoneMap(m => { const { [id]: _, ...rest } = m; return rest; });
+      return;
+    }
+
+    // --- Signed-in path ---
+    const { error } = await supabase.from('habits').delete().eq('id', id);
+    if (error) return alert(error.message);
+    setHabits(arr => arr.filter(h => h.id !== id));
+    setDoneMap(m => { const { [id]: _, ...rest } = m; return rest; });
+  }
 
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-semibold mb-1">Dashboard</h1>
-      <p className="text-sm opacity-70 mb-4">Guest mode (auth disabled)</p>
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="h-title">  </h3>
+        <div className="flex items-center gap-2">
+          <button type="button" className={`btn-ghost ${deleteMode ? 'border-red-500 text-red-600' : ''}`} onClick={() => setDeleteMode(v=>!v)} title="Delete mode">❌</button>
+          <button type="button" className="btn-ghost" onClick={() => setAdding(v=>!v)} title="Add habit">➕</button>
+        </div>
+      </div>
 
-      <section className="grid gap-4 md:grid-cols-2">
-        <Card title="Today’s Completed">
-          {done.length ? (
-            <ul className="space-y-2">
-              {done.map(hb => (
-                <li key={hb.id} className="flex items-center gap-2">
-                  <span className="text-lg">{hb.emoji}</span>
-                  <span>{hb.name}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="muted">No habits checked yet today.</p>
-          )}
-        </Card>
+      <ul className="divide-y">
+        {habits.map(h => {
+          const on = !!doneMap[h.id];
+          return (
+            <li key={h.id} className="flex items-center gap-3 py-3">
+              {/* visible checkbox square */}
+              <button
+                type="button"
+                onClick={() => toggle(h.id)}
+                className={`chk ${on ? 'chk-on' : ''}`}
+                aria-label={on ? 'Uncheck habit' : 'Check habit'}
+                aria-pressed={on}
+                disabled={busy === h.id}
+              >
+                {on && (
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 8l3 3 7-7" />
+                  </svg>
+                )}
+              </button>
 
-        <Card title="All Habits">
-          {habits.length ? (
-            <ul className="space-y-2">
-              {habits.map(hb => (
-                <li key={hb.id} className="flex items-center gap-2">
-                  <span className="text-lg">{hb.emoji}</span>
-                  <span>{hb.name}</span>
-                </li>
+              <EmojiPicker
+                value={h.emoji}
+                onChange={async emo => {
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (!user) {
+                    // guest: update local
+                    const list = lsLoad<Habit[]>(G_HABITS_KEY, []);
+                    const next = list.map(x => x.id === h.id ? { ...x, emoji: emo } : x);
+                    lsSave(G_HABITS_KEY, next);
+                    setHabits(next);
+                    return;
+                  }
+                  // signed-in
+                  const { error } = await supabase.from('habits').update({ emoji: emo }).eq('id', h.id);
+                  if (!error) setHabits(list => list.map(x => x.id === h.id ? { ...x, emoji: emo } : x));
+                }}
+              />
+
+              <InlineEdit
+                initial={h.name}
+                onSave={async val => {
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (!user) {
+                    const list = lsLoad<Habit[]>(G_HABITS_KEY, []);
+                    const next = list.map(x => x.id === h.id ? { ...x, name: val } : x);
+                    lsSave(G_HABITS_KEY, next);
+                    setHabits(next);
+                    return;
+                  }
+                  const { error } = await supabase.from('habits').update({ name: val }).eq('id', h.id);
+                  if (!error) setHabits(list => list.map(x => x.id === h.id ? { ...x, name: val } : x));
+                }}
+                className="flex-1"
+              />
+
+              {deleteMode && (
+                <button type="button" className="btn-ghost text-xs" onClick={() => deleteHabit(h.id)}>
+                  Delete
+                </button>
+              )}
+            </li>
+          );
+        })}
+        {habits.length === 0 && <li className="py-6 muted">No habits yet — click ➕ to add.</li>}
+      </ul>
+
+      {adding && (
+        <div className="mt-4 flex gap-2">
+          <EmojiPicker value={newEmoji} onChange={setNewEmoji} />
+          <input className="flex-1 input" placeholder="Habit name" value={newName} onChange={e=>setNewName(e.target.value)} />
+          <button type="button" className="btn-primary" onClick={addHabit}>Add</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ----------------- EMOJI PICKER (PORTAL, NO CLIP) ----------------- */
+function EmojiPicker({ value, onChange }: { value: string; onChange: (v: string)=>void }) {
+  const [open, setOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const [pos, setPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+
+  const options = ["✅","🔥","💧","📚","🧘🏽‍♀️","🥗","💪🏽","🌙","🧴","🧹","🚰","🧠","🧺","🧽","🛏️","🧑🏾‍🍳"];
+
+  // compute panel position near the trigger
+  useEffect(() => {
+    if (!open || !btnRef.current) return;
+    const r = btnRef.current.getBoundingClientRect();
+    const panelWidth = 240; // ~picker width
+    const left = Math.min(Math.max(8, r.left), window.innerWidth - panelWidth - 8);
+    const top = r.bottom + 8;
+    setPos({ top, left });
+  }, [open]);
+
+  // close on outside click / ESC
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(e.target as Node) &&
+        btnRef.current &&
+        !btnRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+    const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onEsc);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onEsc);
+    };
+  }, [open]);
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        type="button"
+        className="w-8 h-8 text-lg"
+        onClick={() => setOpen(v => !v)}
+        title="Emoji"
+      >
+        {value}
+      </button>
+
+      {open && typeof window !== 'undefined' &&
+        createPortal(
+          <div
+            ref={panelRef}
+            className="fixed z-[9999] w-[240px] rounded-xl border bg-white shadow-lg p-2"
+            style={{ top: pos.top, left: pos.left }}
+            role="listbox"
+          >
+            <div className="grid grid-cols-6 gap-1">
+              {options.map(o => (
+                <button
+                  key={o}
+                  type="button"
+                  className="w-8 h-8 text-lg rounded hover:bg-black/5"
+                  onClick={() => { onChange(o); setOpen(false); }}
+                >
+                  {o}
+                </button>
               ))}
-            </ul>
-          ) : (
-            <p className="muted">No habits yet.</p>
-          )}
-        </Card>
-      </section>
-    </main>
+            </div>
+          </div>,
+          document.body
+        )
+      }
+    </>
+  );
+}
+
+/* --------------------------- HELPERS --------------------------- */
+
+// Modal to confirm clearing a day's data
+export function ConfirmClear({
+  selectedDate,
+  onClose,
+}: {
+  selectedDate: string;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/30">
+      <div className="section w-[320px] text-center">
+        <h3 className="h-title mb-2">Clear this day?</h3>
+        <p className="muted mb-4">
+          This will remove all check-ins for <strong>{selectedDate}</strong>.
+        </p>
+        <div className="flex justify-center gap-2">
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => {
+              try {
+                // Clear guest entries for that day
+                localStorage.removeItem(G_ENTRY_KEY(selectedDate));
+
+                // (Legacy key cleanup, if it existed)
+                const raw = localStorage.getItem('lifestack_data');
+                if (raw) {
+                  const data = JSON.parse(raw);
+                  delete data[selectedDate];
+                  localStorage.setItem('lifestack_data', JSON.stringify(data));
+                }
+              } catch (e) {
+                console.error('Failed to clear day', e);
+              } finally {
+                onClose();
+              }
+            }}
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InlineEdit({ initial, onSave, className }:{ initial:string; onSave:(v:string)=>void; className?:string }) {
+  const [val, setVal] = useState(initial);
+  const [editing, setEditing] = useState(false);
+  useEffect(()=>setVal(initial),[initial]);
+  return editing ? (
+    <form className={className} onSubmit={(e)=>{e.preventDefault(); setEditing(false); if(val.trim()&&val!==initial) onSave(val.trim());}}>
+      <input autoFocus value={val} onChange={e=>setVal(e.target.value)} onBlur={()=>{ setEditing(false); if(val.trim()&&val!==initial) onSave(val.trim()); }} className="w-full border rounded-lg p-1.5"/>
+    </form>
+  ) : (
+    <button type="button" onClick={()=>setEditing(true)} className={`${className} text-left hover:underline`}>{val}</button>
   );
 }
