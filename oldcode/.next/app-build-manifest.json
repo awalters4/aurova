@@ -1,0 +1,51 @@
+{
+  "pages": {
+    "/_not-found/page": [
+      "static/chunks/webpack-351bd87de1dbaf7d.js",
+      "static/chunks/4bd1b696-cf72ae8a39fa05aa.js",
+      "static/chunks/964-02efbd2195ef91bd.js",
+      "static/chunks/main-app-a45691008be94053.js",
+      "static/chunks/app/_not-found/page-8b520fd43452707e.js"
+    ],
+    "/layout": [
+      "static/chunks/webpack-351bd87de1dbaf7d.js",
+      "static/chunks/4bd1b696-cf72ae8a39fa05aa.js",
+      "static/chunks/964-02efbd2195ef91bd.js",
+      "static/chunks/main-app-a45691008be94053.js",
+      "static/css/4e5af7b80143f565.css",
+      "static/chunks/552-727351ec2665448d.js",
+      "static/chunks/app/layout-eac81dfd8cdb7efa.js"
+    ],
+    "/auth/callback/route": [
+      "static/chunks/webpack-351bd87de1dbaf7d.js",
+      "static/chunks/4bd1b696-cf72ae8a39fa05aa.js",
+      "static/chunks/964-02efbd2195ef91bd.js",
+      "static/chunks/main-app-a45691008be94053.js",
+      "static/chunks/app/auth/callback/route-24f243e4c92fe4da.js"
+    ],
+    "/dashboard/page": [
+      "static/chunks/webpack-351bd87de1dbaf7d.js",
+      "static/chunks/4bd1b696-cf72ae8a39fa05aa.js",
+      "static/chunks/964-02efbd2195ef91bd.js",
+      "static/chunks/main-app-a45691008be94053.js",
+      "static/chunks/354-c4914aacc832c3ed.js",
+      "static/chunks/app/dashboard/page-dfd5ff9d7bc848d8.js"
+    ],
+    "/page": [
+      "static/chunks/webpack-351bd87de1dbaf7d.js",
+      "static/chunks/4bd1b696-cf72ae8a39fa05aa.js",
+      "static/chunks/964-02efbd2195ef91bd.js",
+      "static/chunks/main-app-a45691008be94053.js",
+      "static/chunks/354-c4914aacc832c3ed.js",
+      "static/chunks/app/page-3c16242bda8348ab.js"
+    ],
+    "/login/page": [
+      "static/chunks/webpack-351bd87de1dbaf7d.js",
+      "static/chunks/4bd1b696-cf72ae8a39fa05aa.js",
+      "static/chunks/964-02efbd2195ef91bd.js",
+      "static/chunks/main-app-a45691008be94053.js",
+      "static/chunks/354-c4914aacc832c3ed.js",
+      "static/chunks/app/login/page-540a6e73cb64c7e4.js"
+    ]
+  }
+}
