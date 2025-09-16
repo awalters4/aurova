@@ -1,0 +1,21 @@
+/* 1️⃣ Import Google Fonts first */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
+@import "tailwindcss";
+
+/* 3️⃣ Global Styles */
+body {
+  font-family: 'Outfit', sans-serif;
+  margin: 0;
+  padding: 0;
+ background-color: #ffffff; /* brighter, clean background */
+  color: #111827; /* strong dark text */
+
+
+}
+
+/* Hero Gradient Background Utility */
+.hero-bg {
+  background: #D1FAE5 /* aurovaBlue -> aurovaPurple */
+}
+
+/* Optional: styling classes that do NOT use @apply */
