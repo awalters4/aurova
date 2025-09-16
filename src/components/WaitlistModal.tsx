@@ -61,7 +61,7 @@ export default function WaitlistModal() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                  className="px-4 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-emerald-200 text-black placeholder-gray-400"
                 />
               </div>
               <div>
@@ -74,7 +74,7 @@ export default function WaitlistModal() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="px-4 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                  className="px-4 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-emerald-200 text-black placeholder-gray-400"
                 />
               </div>
               <div>
@@ -86,7 +86,7 @@ export default function WaitlistModal() {
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                  className="px-4 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-emerald-200 text-black placeholder-gray-400"
                 />
               </div>
               <button
