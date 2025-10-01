@@ -1,7 +1,22 @@
-import AurovaLanding from "./components/AurovaLanding";
-
-function App() {
-  return <AurovaLanding />;
-}
-
+ import { useEffect, useState } from 'react';                                                                        │ │
+import AurovaLanding from "./components/AurovaLanding";                                                             │ │
+import AuthRedirect from "./components/AuthRedirect";                                                      │ │
+                                                                                                                    │ │
+function App() {                                                                                                    │ │
+  const [isAuthRedirect, setIsAuthRedirect] = useState(false);                                                      │ │
+                                                                                                                    │ │
+  useEffect(() => {                                                                                                 │ │
+    // Check if current path is /auth-redirect                                                                      │ │
+    if (window.location.pathname === '/auth-redirect') {                                                            │ │
+      setIsAuthRedirect(true);                                                                                      │ │
+    }                                                                                                               │ │
+  }, []);                                                                                                           │ │
+                                                                                                                    │ │
+  if (isAuthRedirect) {                                                                                             │ │
+    return <AuthRedirect />;                                                                                        │ │
+  }                                                                                                                 │ │
+                                                                                                                    │ │
+  return <AurovaLanding />;                                                                                         │ │
+}                                                                                                                   │ │
+                                                                                                                    │ │
 export default App;
