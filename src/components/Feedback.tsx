@@ -173,7 +173,7 @@ const Feedback: React.FC = () => {
           </div>
 
           {/* Error Message */}
-          {state.errors && state.errors.length > 0 && (
+          {state.errors && Object.keys(state.errors).length > 0 && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-red-800 font-semibold">
                 Oops! Something went wrong. Please try again.
