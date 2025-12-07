@@ -3,15 +3,17 @@ import logo from "../assets/well-walt-logo.png"; // adjust path if needed
 
 const WWSFooter: React.FC = () => {
   return (
-    <footer className="bg-gray-100 py-6 text-center text-gray-600 text-sm">
-      <div className="flex flex-col items-center justify-center gap-2">
-        <img src={logo} alt="Well Walt Studios Logo" className="h-8" />
-        <p className="text-gray-700 font-medium">
-          👩🏽‍💻 A creation by <span className="font-bold">Well Walt Studios</span>
-        </p>
-        <p className="text-xs text-gray-500">Building apps that build people ✨</p>
-      </div>
-    </footer>
+    <footer className="bg-gray-900 py-6 text-center text-gray-200 text-sm font-mono">
+  <div className="flex flex-col items-center justify-center gap-1">
+    <a href="https://www.wellwaltstudios.com" target="_blank" rel="noopener noreferrer">
+      <img src={logo} alt="Well Walt Studios Logo" className="h-8 hover:opacity-80 transition-opacity duration-200" />
+    </a>
+    <p className="font-bold text-gray-200">
+      👩🏽‍💻 A creation by Well Walt Studios
+    </p>
+    <p className="text-xs text-gray-400">Building apps that build people ✨</p>
+  </div>
+</footer>
   );
 };
 
