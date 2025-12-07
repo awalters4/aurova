@@ -2,20 +2,202 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
 @import "tailwindcss";
 
+/* Tailwind 4 Custom Theme */
+@theme {
+  --color-primary: #FF6B9D;
+  --color-secondary: #C8A1E0;
+  --color-pink: #FF6B9D;
+  --color-pink-light: #FFB6D9;
+  --color-purple: #674188;
+  --color-gold: #FFD700;
+  --color-bgWarm: #FFF8F3;
+  --color-textDark: #2C2C2C;
+  --color-textGray: #6B7280;
+
+  --font-family-body: 'Outfit', sans-serif;
+  --font-family-heading: 'Outfit', sans-serif;
+}
+
 /* 3️⃣ Global Styles */
 body {
   font-family: 'Outfit', sans-serif;
   margin: 0;
   padding: 0;
- background-color: #ffffff; /* brighter, clean background */
-  color: #111827; /* strong dark text */
+  background-color: #FFF8F3;
+  color: #2C2C2C;
+}
 
+/* Custom gradient backgrounds */
+.bg-gradient-pink-purple {
+  background: linear-gradient(135deg, #FF6B9D 0%, #C8A1E0 100%);
+}
 
+.bg-gradient-pink-gold {
+  background: linear-gradient(135deg, #FF6B9D 0%, #FFD700 100%);
+}
+
+.bg-gradient-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+}
+
+.bg-gradient-to-br {
+  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+}
+
+.from-primary {
+  --tw-gradient-from: #FF6B9D;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(255, 107, 157, 0));
+}
+
+.via-secondary {
+  --tw-gradient-via: #C8A1E0;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to, rgba(200, 161, 224, 0));
+}
+
+.to-pink-light\/30 {
+  --tw-gradient-to: rgba(255, 182, 217, 0.3);
+}
+
+/* Text gradients */
+.bg-clip-text {
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Custom shadows */
+.shadow-glass {
+  box-shadow: 0 8px 32px 0 rgba(255, 107, 157, 0.1);
+}
+
+.shadow-glow-pink {
+  box-shadow: 0 0 30px rgba(255, 107, 157, 0.5);
+}
+
+.shadow-glow-gold {
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+}
+
+/* Backdrop blur */
+.backdrop-blur-sm {
+  backdrop-filter: blur(12px);
+}
+
+.backdrop-blur-md {
+  backdrop-filter: blur(12px);
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 3s linear infinite;
 }
 
 /* Hero Gradient Background Utility */
 .hero-bg {
-  background: #D1FAE5 /* aurovaBlue -> aurovaPurple */
+  background: #D1FAE5;
 }
 
-/* Optional: styling classes that do NOT use @apply */
+/* Color utilities */
+.bg-bgWarm {
+  background-color: #FFF8F3;
+}
+
+.bg-primary {
+  background-color: #FF6B9D;
+}
+
+.bg-secondary {
+  background-color: #C8A1E0;
+}
+
+.bg-pink {
+  background-color: #FF6B9D;
+}
+
+.bg-pink-light {
+  background-color: #FFB6D9;
+}
+
+.bg-purple {
+  background-color: #674188;
+}
+
+.text-textDark {
+  color: #2C2C2C;
+}
+
+.text-textGray {
+  color: #6B7280;
+}
+
+.text-primary {
+  color: #FF6B9D;
+}
+
+.text-white\/90 {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.text-white\/80 {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.bg-white\/80 {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.bg-white\/90 {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.bg-white\/20 {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.bg-white\/30 {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Border colors */
+.border-pink-light {
+  border-color: #FFB6D9;
+}
+
+.border-pink-light\/30 {
+  border-color: rgba(255, 182, 217, 0.3);
+}
+
+.border-pink-light\/20 {
+  border-color: rgba(255, 182, 217, 0.2);
+}
+
+.border-pink-light\/40 {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.border-purple {
+  border-color: #674188;
+}
+
+.border-white\/40 {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Focus states */
+.focus\:border-purple:focus {
+  border-color: #674188;
+}
