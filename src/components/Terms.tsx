@@ -275,8 +275,8 @@ const Terms: React.FC = () => {
           <h2 className="text-2xl font-bold text-rose-500 border-b-2 border-rose-500 pb-2 mb-4">19. Contact Information</h2>
           <p className="text-gray-700 mb-3">For questions about these Terms:</p>
           <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
-            <li><strong>Email:</strong> <a href="mailto:ariel@wellwaltstudios.com" className="text-rose-500 hover:underline">ariel@wellwaltstudios.com</a></li>
-            <li><strong>Website:</strong> <a href="https://www.wellwaltstudios.com" className="text-rose-500 hover:underline">https://www.wellwaltstudios.com</a></li>
+            <li><strong>Email:</strong> <a href="mailto:support@aurovabyaw.com" className="text-rose-500 hover:underline">support@aurovabyaw.com</a></li>
+            <li><strong>Website:</strong> <a href="https://www.aurovabyaw.com" className="text-rose-500 hover:underline">https://www.aurovabyaw.com</a></li>
             <li><strong>Address:</strong> Well Walt Studios, Orleans Parish, Louisiana</li>
           </ul>
         </section>

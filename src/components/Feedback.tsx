@@ -191,19 +191,19 @@ const Feedback: React.FC = () => {
           <ul className="space-y-2 text-gray-700">
             <li>
               <strong>Email:</strong>{" "}
-              <a href="mailto:ariel@wellwaltstudios.com" className="text-rose-500 hover:underline">
-                ariel@wellwaltstudios.com
+              <a href="mailto:support@aurovabyaw.com" className="text-rose-500 hover:underline">
+                support@aurovabyaw.com
               </a>
             </li>
             <li>
               <strong>Website:</strong>{" "}
               <a
-                href="https://www.wellwaltstudios.com"
+                href="https://www.aurovabyaw.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-rose-500 hover:underline"
               >
-                https://www.wellwaltstudios.com
+                https://www.aurovabyaw.com
               </a>
             </li>
           </ul>

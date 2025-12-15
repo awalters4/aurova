@@ -11,8 +11,8 @@ const Support: React.FC = () => {
 
           <div className="bg-[#FFF7F8] p-6 rounded-xl my-6 border-l-4 border-rose-500">
             <h3 className="text-xl font-semibold text-gray-900 mb-3">📧 Contact Us</h3>
-            <p className="text-gray-700 mb-2"><strong>Email:</strong> <a href="mailto:support@aurova.app" className="text-rose-500 hover:underline">support@aurova.app</a></p>
-            <p className="text-gray-700 mb-2"><strong>Website:</strong> <a href="https://aurova.app" className="text-rose-500 hover:underline">https://aurova.app</a></p>
+            <p className="text-gray-700 mb-2"><strong>Email:</strong> <a href="mailto:support@aurovabyaw.com" className="text-rose-500 hover:underline">support@aurovabyaw.com</a></p>
+            <p className="text-gray-700 mb-2"><strong>Website:</strong> <a href="https://www.aurovabyaw.com" className="text-rose-500 hover:underline">https://www.aurovabyaw.com</a></p>
             <p className="text-gray-700">We typically respond within 24 hours on business days.</p>
           </div>
 
@@ -111,10 +111,10 @@ const Support: React.FC = () => {
           </section>
 
           <h2 className="text-3xl font-bold text-rose-500 border-b-2 border-rose-500 pb-2 mb-6 mt-10">Feature Requests</h2>
-          <p className="text-gray-700 leading-relaxed mb-6">Have an idea to make Aurova better? We'd love to hear it! Email us at <a href="mailto:support@aurova.app" className="text-rose-500 hover:underline">support@aurova.app</a> with your suggestions.</p>
+          <p className="text-gray-700 leading-relaxed mb-6">Have an idea to make Aurova better? We'd love to hear it! Email us at <a href="mailto:support@aurovabyaw.com" className="text-rose-500 hover:underline">support@aurovabyaw.com</a> with your suggestions.</p>
 
           <h2 className="text-3xl font-bold text-rose-500 border-b-2 border-rose-500 pb-2 mb-6">Report a Bug</h2>
-          <p className="text-gray-700 mb-3">Found a bug? Please email us at <a href="mailto:support@aurova.app" className="text-rose-500 hover:underline">support@aurova.app</a> with:</p>
+          <p className="text-gray-700 mb-3">Found a bug? Please email us at <a href="mailto:support@aurovabyaw.com" className="text-rose-500 hover:underline">support@aurovabyaw.com</a> with:</p>
           <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4 mb-6">
             <li>A description of the issue</li>
             <li>Steps to reproduce it</li>
@@ -132,7 +132,7 @@ const Support: React.FC = () => {
           <div className="mt-10 p-6 bg-[#FFF7F8] rounded-xl text-center">
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Still need help?</h3>
             <p className="text-gray-700 mb-2">We're here for you! Reach out to us at:</p>
-            <p className="text-lg font-bold"><a href="mailto:support@aurova.app" className="text-rose-500 hover:underline">support@aurova.app</a></p>
+            <p className="text-lg font-bold"><a href="mailto:support@aurovabyaw.com" className="text-rose-500 hover:underline">support@aurovabyaw.com</a></p>
           </div>
         </div>
       </div>
