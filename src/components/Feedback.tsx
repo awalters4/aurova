@@ -3,7 +3,7 @@ import { useForm, ValidationError } from "@formspree/react";
 import WWSFooter from "./WWSFooter";
 
 const Feedback: React.FC = () => {
-  const [state, handleSubmit] = useForm("YOUR_FORMSPREE_ID"); // Replace with your Formspree form ID
+  const [state, handleSubmit] = useForm("xpqawboe");
   const [issueType, setIssueType] = useState("bug");
 
   if (state.succeeded) {
@@ -73,22 +73,22 @@ const Feedback: React.FC = () => {
             <ValidationError prefix="Name" field="name" errors={state.errors} />
           </div>
 
-          {/* Account Email/Phone */}
+          {/* Account Email */}
           <div>
             <label htmlFor="account" className="block text-sm font-semibold text-gray-700 mb-2">
-              Account Email or Phone Number <span className="text-rose-500">*</span>
+              Account Email <span className="text-rose-500">*</span>
             </label>
             <input
               id="account"
-              type="text"
+              type="email"
               name="account"
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
-              placeholder="Email or phone number you used to sign up"
+              placeholder="Email you used to sign up"
             />
             <ValidationError prefix="Account" field="account" errors={state.errors} />
             <p className="text-sm text-gray-500 mt-1">
-              Please use the same email or phone number you registered with
+              Please use the same email you registered with
             </p>
           </div>
 

@@ -13,42 +13,13 @@ import screenshot7 from "../assets/screenshot7.PNG";
 import screenshot8 from "../assets/screenshot8.jpg";
 
 const AurovaLanding: React.FC = () => {
-  const [state, handleSubmit] = useForm("xdklvjnk"); // Using the same Formspree ID from business site
-  const [email, setEmail] = useState("");
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
+  const [state, handleSubmit] = useForm("xpqawboe");
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [issueType, setIssueType] = useState("general");
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
-
-  // Countdown timer
-  useEffect(() => {
-    const launchDate = new Date("2025-12-18T00:00:00").getTime();
-
-    const updateCountdown = () => {
-      const now = new Date().getTime();
-      const distance = launchDate - now;
-
-      if (distance > 0) {
-        setTimeLeft({
-          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-          seconds: Math.floor((distance % (1000 * 60)) / 1000),
-        });
-      }
-    };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-
-    return () => clearInterval(interval);
   }, []);
 
   // App screenshots
@@ -63,38 +34,17 @@ const AurovaLanding: React.FC = () => {
     { id: 8, src: screenshot8, alt: "Aurova Profile" },
   ];
 
-  const handleEmailSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleFeedbackSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     await handleSubmit(e);
-    if (state.succeeded) {
-      setEmail("");
-    }
   };
 
   return (
     <div className="font-body bg-bgWarm text-textDark min-h-screen">
-      {/* Countdown Banner */}
+      {/* Launch Banner */}
       <div className="bg-gradient-pink-purple text-white text-center py-4 font-semibold sticky top-0 z-50 shadow-lg">
-        <div className="flex items-center justify-center gap-8 flex-wrap px-4">
-          <span className="text-lg md:text-xl">🚀 Launching Soon!</span>
-          <div className="flex gap-4">
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold">{timeLeft.days}</div>
-              <div className="text-xs uppercase">Days</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold">{timeLeft.hours}</div>
-              <div className="text-xs uppercase">Hours</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold">{timeLeft.minutes}</div>
-              <div className="text-xs uppercase">Min</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold">{timeLeft.seconds}</div>
-              <div className="text-xs uppercase">Sec</div>
-            </div>
-          </div>
+        <div className="flex items-center justify-center gap-3 flex-wrap px-4">
+          <span className="text-lg md:text-xl">🚀 Now Available!</span>
         </div>
       </div>
 
@@ -118,18 +68,15 @@ const AurovaLanding: React.FC = () => {
 
               {/* App Store Buttons */}
               <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start mb-6">
-                <div className="relative">
-                  <button
-                    disabled
-                    className="flex items-center justify-center gap-2 bg-gray-400 text-gray-200 px-6 py-3 rounded-lg shadow cursor-not-allowed font-semibold text-sm opacity-60"
-                  >
-                    <FaApple size={20} />
-                    App Store
-                  </button>
-                  <span className="absolute -top-2 -right-2 bg-white text-purple text-xs font-bold px-2 py-1 rounded-full shadow">
-                    Soon
-                  </span>
-                </div>
+                <a
+                  href="https://apps.apple.com/us/app/aurova/id6756036236"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-lg shadow hover:bg-gray-800 hover:scale-105 transition-all font-semibold text-sm"
+                >
+                  <FaApple size={20} />
+                  App Store
+                </a>
                 <div className="relative">
                   <button
                     disabled
@@ -326,55 +273,206 @@ const AurovaLanding: React.FC = () => {
         </div>
       </section>
 
-      {/* Email Signup Section */}
-      <section id="waitlist" className="px-8 py-20 bg-white">
+      {/* Feedback Section */}
+      <section className="px-8 py-20 bg-white">
         <div className="max-w-2xl mx-auto">
           <div className="bg-gradient-to-br from-primary via-secondary to-pink-light/30 p-12 rounded-2xl shadow-xl text-center">
             <h2 className="text-3xl font-heading font-bold mb-6 text-white">
-              Be the first to know when Aurova launches
+              We'd Love to Hear From You
             </h2>
             <p className="text-lg text-white/90 mb-8">
-              Join our email list to get early access, launch updates, and exclusive tips for building habits that stick.
+              Have comments, concerns, suggestions for features or integrations? Leave it here and we'll get back to you.
             </p>
-
-            {!state.succeeded ? (
-              <form onSubmit={handleEmailSubmit} className="max-w-md mx-auto">
-                <div className="mb-6">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    name="email"
-                    placeholder="Enter your email"
-                    required
-                    autoComplete="email"
-                    className="w-full px-6 py-4 rounded-xl border-2 border-pink-light/30 focus:border-purple focus:outline-none transition-colors text-lg"
-                  />
-                  <ValidationError prefix="Email" field="email" errors={state.errors} />
-                </div>
-                <button
-                  type="submit"
-                  disabled={state.submitting}
-                  className="w-full bg-gradient-pink-purple text-white px-8 py-4 rounded-xl shadow-glow-pink hover:scale-105 hover:shadow-glow-gold transition-all duration-300 font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {state.submitting ? "Joining..." : "Join the Waitlist"}
-                </button>
-              </form>
-            ) : (
-              <div className="max-w-md mx-auto bg-white/90 p-8 rounded-xl">
-                <p className="text-xl text-green-600 font-semibold mb-4">
-                  You're on the list! 🎉
-                </p>
-                <p className="text-textGray text-lg">
-                  We'll send you updates as we get closer to launch.
-                </p>
-              </div>
-            )}
+            <button
+              onClick={() => setIsFeedbackModalOpen(true)}
+              className="bg-white text-purple px-8 py-4 rounded-xl shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-300 font-semibold text-lg"
+            >
+              Share Feedback
+            </button>
           </div>
         </div>
       </section>
 
+      {/* Legal Links */}
+      <div className="px-8 py-6 bg-bgWarm text-center">
+        <div className="flex gap-6 justify-center text-sm text-textGray flex-wrap">
+          <a href="/privacy" className="hover:text-purple transition-colors">Privacy Policy</a>
+          <span>•</span>
+          <a href="/terms" className="hover:text-purple transition-colors">Terms of Service</a>
+          <span>•</span>
+          <a href="/feedback" className="hover:text-purple transition-colors">Feedback</a>
+          <span>•</span>
+          <a href="/support" className="hover:text-purple transition-colors">Support</a>
+        </div>
+      </div>
+
       <WWSFooter />
+
+      {/* Feedback Modal */}
+      {isFeedbackModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-8 relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setIsFeedbackModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold z-10"
+            >
+              ✕
+            </button>
+
+            <div className="p-8">
+              <h2 className="text-3xl font-heading font-bold text-purple mb-2">Feedback & Support</h2>
+              <p className="text-gray-600 mb-6">
+                Help us make Aurova better! Share your issues, suggestions, or integration ideas.
+              </p>
+
+              {!state.succeeded ? (
+                <form onSubmit={handleFeedbackSubmit} className="space-y-4">
+                  {/* Issue Type Selection */}
+                  <div>
+                    <label htmlFor="issue-type" className="block text-sm font-semibold text-gray-700 mb-2">
+                      What type of feedback are you providing?
+                    </label>
+                    <select
+                      id="issue-type"
+                      name="issueType"
+                      value={issueType}
+                      onChange={(e) => setIssueType(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple focus:border-transparent"
+                    >
+                      <option value="general">General Feedback</option>
+                      <option value="bug">Bug Report / Issue</option>
+                      <option value="feature">Feature Request</option>
+                      <option value="integration">Integration Idea</option>
+                    </select>
+                    <ValidationError prefix="Issue Type" field="issueType" errors={state.errors} />
+                  </div>
+
+                  {/* Name */}
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Name (Optional)
+                    </label>
+                    <input
+                      id="name"
+                      type="text"
+                      name="name"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple focus:border-transparent"
+                      placeholder="Your name"
+                    />
+                    <ValidationError prefix="Name" field="name" errors={state.errors} />
+                  </div>
+
+                  {/* Account Email */}
+                  <div>
+                    <label htmlFor="account" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Account Email <span className="text-purple">*</span>
+                    </label>
+                    <input
+                      id="account"
+                      type="email"
+                      name="account"
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple focus:border-transparent"
+                      placeholder="Email you used to sign up"
+                    />
+                    <ValidationError prefix="Account" field="account" errors={state.errors} />
+                  </div>
+
+                  {/* Subject/Title */}
+                  <div>
+                    <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Subject <span className="text-purple">*</span>
+                    </label>
+                    <input
+                      id="subject"
+                      type="text"
+                      name="subject"
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple focus:border-transparent"
+                      placeholder={
+                        issueType === "bug"
+                          ? "Brief description of the issue"
+                          : issueType === "integration"
+                          ? "Integration you'd like to see"
+                          : "Brief summary of your feedback"
+                      }
+                    />
+                    <ValidationError prefix="Subject" field="subject" errors={state.errors} />
+                  </div>
+
+                  {/* Message/Details */}
+                  <div>
+                    <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">
+                      {issueType === "bug" ? "Issue Details" : "Comments & Suggestions"}{" "}
+                      <span className="text-purple">*</span>
+                    </label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      required
+                      rows={6}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple focus:border-transparent resize-y"
+                      placeholder={
+                        issueType === "bug"
+                          ? "Please describe the issue in detail..."
+                          : issueType === "integration"
+                          ? "Tell us about the integration you'd like to see..."
+                          : "Share your thoughts, suggestions, or ideas..."
+                      }
+                    />
+                    <ValidationError prefix="Message" field="message" errors={state.errors} />
+                  </div>
+
+                  {/* Device/Platform Info (for bugs) */}
+                  {issueType === "bug" && (
+                    <div>
+                      <label htmlFor="platform" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Platform/Device (Optional)
+                      </label>
+                      <input
+                        id="platform"
+                        type="text"
+                        name="platform"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple focus:border-transparent"
+                        placeholder="e.g., iPhone 14 Pro, iOS 17.2"
+                      />
+                      <ValidationError prefix="Platform" field="platform" errors={state.errors} />
+                    </div>
+                  )}
+
+                  {/* Submit Button */}
+                  <div>
+                    <button
+                      type="submit"
+                      disabled={state.submitting}
+                      className="w-full bg-gradient-pink-purple text-white px-8 py-4 rounded-xl font-semibold text-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {state.submitting ? "Sending..." : "Submit Feedback"}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-6xl mb-4">✅</div>
+                  <h3 className="text-2xl font-bold text-purple mb-4">Thank You!</h3>
+                  <p className="text-xl text-gray-700 mb-6">
+                    We've received your feedback and appreciate you taking the time to help us improve Aurova.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setIsFeedbackModalOpen(false);
+                      window.location.reload();
+                    }}
+                    className="bg-purple text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple/90 transition"
+                  >
+                    Close
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
